@@ -37,6 +37,7 @@ get help info via `nustore --help` `nustore restore --help` or `nustore minify -
 `-d` `--dir` | directory packages stored (typically at /usr/local/share/dotnet/store on macOS/Linux and C:/Program Files/dotnet/store on Windows)
 `-f` `--force` | override existing packages, default is false
 `-y` `--yes` | yes to all confirm, default is false
+`-k` `--keep` | keep the raw full path in package, default is false
 `--nuget` | set nuget resource api url. default: https://api.nuget.org/v3/index.json
 `-e` `--exclude` | skip packages, support regex. separated by semicolon for mutiple
 `-s` `--special` | restore special packages, support regex. separated by semicolon for mutiple
