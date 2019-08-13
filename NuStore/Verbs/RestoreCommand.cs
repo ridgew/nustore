@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using NuStore.Common;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using NuStore.Common;
 
 namespace NuStore
 {
-    internal class RestoreCommand: DepsCommandBase
+    internal class RestoreCommand : DepsCommandBase
     {
         static RestoreCommand()
         {
@@ -128,7 +125,7 @@ namespace NuStore
                                 continue;
                             }
 
-                            var fileName = Path.Combine(libFolder, entry.Name);
+                            var fileName = Path.Combine(libFolder, _options.KeepPath ? entry.FullName : entry.Name);
                             if (File.Exists(fileName) && !_options.ForceOverride)
                             {
                                 MessageHelper.Warning($"Skip override:{entry.FullName}");
@@ -141,21 +138,21 @@ namespace NuStore
                         }
                     }
 
-                    if(hasSave)
+                    if (hasSave)
                     {
                         MessageHelper.Successs($"Save {name}[{version}] to {libFolder}");
 
                         return true;
                     }
-                    else if(!hasLibs)
+                    else if (!hasLibs)
                     {
                         MessageHelper.Error($"Can't find lib entry in {Path.GetFileName(url)}");
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                MessageHelper.Error("Restore failed:"+ ex.Message);
+                MessageHelper.Error("Restore failed:" + ex.Message);
             }
 
             return false;
@@ -165,8 +162,8 @@ namespace NuStore
         {
             if (!string.IsNullOrWhiteSpace(_options.Special))
             {
-                if(IsMatch(_options.Special, package))
-                      return true;
+                if (IsMatch(_options.Special, package))
+                    return true;
 
                 return false;
             }
@@ -178,9 +175,9 @@ namespace NuStore
         private (string arch, string runtime) ParseRuntimeInfo(ProjectDeps deps)
         {
             var arch = _options.Architecture;
-            if(string.IsNullOrWhiteSpace(arch))
+            if (string.IsNullOrWhiteSpace(arch))
             {
-                switch((deps?.CompilationOptions?.Platform??"").ToLower())
+                switch ((deps?.CompilationOptions?.Platform ?? "").ToLower())
                 {
                     //case "anycpu":
                     //    arch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
@@ -194,14 +191,14 @@ namespace NuStore
                     case "x64":
                         arch = "x64";
                         break;
-                    //case "arm":
-                    //    arch = "x64";
-                    //    break;
-                    //case "itanium":
-                    //    arch = "x64";
-                    //    break;
-                    //default:
-                    //    throw new NotSupportedException("");
+                        //case "arm":
+                        //    arch = "x64";
+                        //    break;
+                        //case "itanium":
+                        //    arch = "x64";
+                        //    break;
+                        //default:
+                        //    throw new NotSupportedException("");
                 }
             }
 
@@ -210,7 +207,7 @@ namespace NuStore
 
 
             var runtime = _options.Runtime;
-            if(string.IsNullOrWhiteSpace(runtime))
+            if (string.IsNullOrWhiteSpace(runtime))
             {
                 var name = deps?.RuntimeTarget?.Name;
                 if (!string.IsNullOrWhiteSpace(name))
@@ -233,7 +230,7 @@ namespace NuStore
         public override async Task Execute()
         {
             var (_, deps) = GetDeps(_options.DepsFile);
-            
+
             (string arch, string runtime) = ParseRuntimeInfo(deps);
 
             var storeDirectory = GetStoreDirectory();
@@ -257,7 +254,7 @@ namespace NuStore
             {
                 if (!item.Value.Serviceable
                     || !string.Equals(item.Value.Type, "package", StringComparison.InvariantCultureIgnoreCase)
-                    ||!NeedDownload(item.Key))
+                    || !NeedDownload(item.Key))
                 {
                     if (_options.Verbosity)
                         MessageHelper.Warning($"Not serviceable, Skip restore:{item.Key}");
@@ -266,7 +263,7 @@ namespace NuStore
 
                 (string name, string version) = ParsePackageName(item.Key);
 
-                if(_options.Verbosity)
+                if (_options.Verbosity)
                     MessageHelper.Info($"Begin restore package:{name}[{version}]");
 
                 if (await DownloadPackage(name, version, _options.Flatten ? storeDirectory : Path.Combine(pkgFolder, item.Value.Path)))

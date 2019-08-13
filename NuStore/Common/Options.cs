@@ -21,6 +21,9 @@ namespace NuStore.Common
         [Option('y', "yes", HelpText = "yes to all confirm")]
         public bool Yes { get; set; }
 
+        [Option('k', "keep", HelpText = "keep the raw path in package")]
+        public bool KeepPath { get; set; }
+
         [Option("nuget", HelpText = "set nuget resource api url. default: https://api.nuget.org/v3/index.json")]
         public string NugetServiceIndex { get; set; }
 
